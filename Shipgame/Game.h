@@ -7,8 +7,9 @@
 #include"Grid.h"
 #include "FregatteSchiff.h"
 #include "KreuzerSchiff.h"
-#include "Schiff.h";
-#define anzahlBoote 2
+#include "Schiff.h"
+#include "time.h"
+#define anzahlBoote 1
 
 using namespace std;
 
@@ -21,7 +22,7 @@ public:
 	Spieler S2;
 	
 	void init();
-
+	int trefferZeile = -1;					//global, für Compuetermodus, wenn er ein Treffer erzielt
 	void play();
 	void fire(Grid* own, Grid* enemy,int X,int Y);
 	void gameOver(Grid* Netz);
@@ -33,6 +34,7 @@ private:
 	void setShip(string spielerName, Grid* netz);
 	void setShipField(Schiff* meinSchiff, int X,int Y,Grid* meinNetz);
 	int umwandlungYAchse(char Y);
+	char umwandlungCompYAchse(int Y);
 	int intEinlesen();
 	char charEinlesen();
 	void update(Grid* Netz);
@@ -40,5 +42,6 @@ private:
 	Grid S1enemyNetz;
 	Grid S2ownNetz;
 	Grid S2enemyNetz;
+	void setShipComputer(string spielerName, Grid* netz);
 };
 

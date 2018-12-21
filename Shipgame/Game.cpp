@@ -23,12 +23,23 @@ void Game::init()
 	system("cls");
 	strichLinie();
 	cout << "Willkommen bei dem Spiel Schiffe versenken!" << endl;
+	cout << "Geben Sie 'Computer' ein wenn Sie gegen den Computer spielen wollen!" << endl;
 	copyRight();
 	strichLinie();
 	cout << "Bitte geben Sie einen Namen fuer Spieler 2 ein:" << endl;
 	cin >> this->S2.name;
-	setShip(this->S2.name, &S2ownNetz);
-
+	/*gegen Compueter*/
+	if (this->S2.name == "Computer") {
+		cout << "Sie spielen gegen den Computer!" << endl;
+		getchar();
+		setShipComputer(this->S2.name, &S2ownNetz);
+		
+	}
+	//dann mit else weiter
+	else {
+		setShip(this->S2.name, &S2ownNetz);
+	}
+	
 	try {			//play läuft solange bis eine Exception ausgeworfen wird
 		play();		//wenn Spiel Ende, Spiel unterbrochen mit Nachricht wer gewonnen hat
 	}
@@ -41,13 +52,15 @@ void Game::init()
 		system("Pause");
 	}
 }
-
+						
 void Game::play()
 { 
 	char Y;
 	int x;
 	int y;
-	while (true) {		//Mit exceptio wird die While verlassen!
+	int antwort = 0;
+
+	while (true) {		//Mit exception wird die While verlassen!
 		system("cls");
 		// Spieler 1
 		printField(S1.name, S1enemyNetz);
@@ -93,54 +106,186 @@ void Game::play()
 			}	
 		}
 		system("cls");
-		//Spieler 2
-		printField(S2.name, S2enemyNetz);
-		printField(S2.name, S2ownNetz);
-		cout << "Wohin wollen sie Schiessen:" << endl;
-		cout << "Geben sie die Y Kordinate ein (A,B..):" << endl;
-		Y = charEinlesen();
-		cout << "Geben sie die X Kordinate ein (1,2..):" << endl;
-		x = intEinlesen();
-		try {	//für Y wert und für Firemethode ob das Schiff getroffen wurde oder nicht
-			y = umwandlungYAchse(Y);
-			fire(&S2enemyNetz, &S1ownNetz, x, y);
-		}
-		catch (const char* Status) {
-			system("cls");
-			cout << endl << endl << endl;
-			cout << Status << endl;
-			cout << endl << endl << endl;
-			system("Pause");
-		}
-		try {	//Schaut nach jedem Schuss nach ob beim GegnerFeld nach
-				//ob noch ein Feld mit einem nichtgetroffenes Schiff vorhanden ist
-			gameOver(&S1ownNetz);
-			update(&S1ownNetz);
-		}
-		catch (int i) {	//wenn Wert unter trow ein 2er ist dann heißt es Spiel Ende
-			if (i == 1) {
-				try {
-					update(&S2ownNetz);
+
+		if (this->S2.name == "Computer") {
+			/*Spieler 2 = Computer*/
+			bool status = true;
+			int z = 0, s = 0;
+			//wenn Schiff getroffen ist dann soll der Comp in dieser Zeile weitermachen
+			try {
+				for (auto temp : this->S1ownNetz.vMatrix) {
+					for (auto Zeile : temp) {
+						//Wenn in der Zeile ein Schiff getroffen ist und 
+						if (Zeile->fieldstate->getState() == 'X') {
+							trefferZeile = z;
+							throw 20;		//raus aus den for-eachschleifen
+						}
+					}
+					z++;
 				}
-				catch (int i) {
-					if (i == 3) {		//Wenn alle Kammer voll mit Wasser sind
-						system("cls");
-						cout << endl << endl << endl;
-						cout << "Schiff versenkt !!" << endl;
-						cout << endl << endl << endl;
-						system("Pause");
+			}
+			catch (int e) {
+				//fahre weiter mit dem Rest des Codes fort
+			}
+			if (trefferZeile>=0 && trefferZeile<10) {					//weiter in dieser Zeile schißen bis Schiff zerstört ist
+				printField(S2.name, S2enemyNetz);
+				printField(S2.name, S2ownNetz);
+				cout << "Der Computer schiesst auf:" << endl;	
+				Y = umwandlungCompYAchse(trefferZeile);					//Umwandlung in char  dann uebergabe
+				cout << "Die Y Kordinate ist:" << Y << endl;
+				getchar();
+				z = 0;
+				auto temp = this->S1ownNetz.vMatrix[trefferZeile];		//suche in dieser Zeile
+				char zeichen;
+				try {
+					x = -1; //initialisieren
+					for (auto Zeile : temp) {
+						s++;
+						//Wenn in der Zeile ein Schiff ok ist  
+						if (Zeile->fieldstate->getState() == 'V' ) {
+							x = s;			//die X Koord. ist jetzt Schiff ok
+							throw 10;
+						}
+						//if (Zeile->fieldstate->getState() == ' ' || Zeile->fieldstate->getState() == '*' || Zeile->fieldstate->getState() == 'o') {
+						//	trefferZeile = -1;
+						//	zeichen = Zeile->fieldstate->getState();	// warum bleibt er bei wasser immer hängen?
+						//	
+						//		throw 9;
+						//}
+						
 					}
 				}
+				catch (int f) {
+					///*if (f == 9) {
+					//	trefferZeile = -1;
+					//}*/
+					//if (f == 10) {
+					//	
+					//}
+				}
+				if (x == -1) {
+					printField(S2.name, S2enemyNetz);
+					printField(S2.name, S2ownNetz);
+					cout << "Der Computer schiesst auf:" << endl;
+					Y = umwandlungCompYAchse((rand() % 10));
+					cout << "Die Y Kordinate ist:" << Y << endl;
+					getchar();
+					x = rand() % 10;
+					cout << "Die X Kordinate ist:" << x << endl;
+					getchar();
+				}
+				else {
+					cout << "Die X Kordinate ist:" << x << endl;
+					getchar();
+				}
+				
 			}
-			if (i == 2) {
-				throw "Spieler 2 Gewinnt !!";
+			else {
+				printField(S2.name, S2enemyNetz);
+				printField(S2.name, S2ownNetz);
+				cout << "Der Computer schiesst auf:" << endl;
+				Y = umwandlungCompYAchse((rand() % 10));
+				cout << "Die Y Kordinate ist:" << Y << endl;
+				getchar();
+				x = rand() % 10;
+				cout << "Die X Kordinate ist:" << x << endl;
+				getchar();
 			}
-			else if (i == 3) {		//Wenn alle Kammer voll mit Wasser sind
-				system("cls");
+			try {	//für Y wert und für Firemethode ob das Schiff getroffen wurde oder nicht
+				y = umwandlungYAchse(Y);
+				fire(&S2enemyNetz, &S1ownNetz, x, y);
+			}
+			catch (const char* Status) {
+				system("cls"); 
 				cout << endl << endl << endl;
-				cout << "Schiff versenkt !!" << endl;
+				cout << Status << endl;
 				cout << endl << endl << endl;
 				system("Pause");
+			}
+			try {	//Schaut nach jedem Schuss nach ob beim GegnerFeld nach
+				//ob noch ein Feld mit einem nichtgetroffenes Schiff vorhanden ist
+				gameOver(&S1ownNetz);
+				update(&S1ownNetz);
+			}
+			catch (int i) {	//wenn Wert unter trow ein 2er ist dann heißt es Spiel Ende
+				if (i == 1) {
+					try {
+						update(&S2ownNetz);
+					}
+					catch (int i) {
+						if (i == 3) {		//Wenn alle Kammer voll mit Wasser sind
+							system("cls");
+							cout << endl << endl << endl;
+							cout << "Schiff versenkt !!" << endl;
+							cout << endl << endl << endl;
+							trefferZeile = -1;
+							system("Pause");
+						}
+					}
+				}
+				if (i == 2) {
+					throw "Spieler 2 Gewinnt !!";
+				}
+				else if (i == 3) {		//Wenn alle Kammer voll mit Wasser sind
+					system("cls");
+					cout << endl << endl << endl;
+					cout << "Schiff versenkt !!" << endl;
+					trefferZeile = -1;
+					cout << endl << endl << endl;
+					system("Pause");
+				}
+			}		
+		}
+		else {
+			//Spieler 2
+			printField(S2.name, S2enemyNetz);
+			printField(S2.name, S2ownNetz);
+			cout << "Wohin wollen sie Schiessen:" << endl;
+			cout << "Geben sie die Y Kordinate ein (A,B..):" << endl;
+			Y = charEinlesen();
+			cout << "Geben sie die X Kordinate ein (1,2..):" << endl;
+			x = intEinlesen();
+			try {	//für Y wert und für Firemethode ob das Schiff getroffen wurde oder nicht
+				y = umwandlungYAchse(Y);
+				fire(&S2enemyNetz, &S1ownNetz, x, y);
+			}
+			catch (const char* Status) {
+				system("cls");
+				cout << endl << endl << endl;
+				cout << Status << endl;
+				cout << endl << endl << endl;
+				system("Pause");
+			}
+			try {	//Schaut nach jedem Schuss nach ob beim GegnerFeld nach
+					//ob noch ein Feld mit einem nichtgetroffenes Schiff vorhanden ist
+				gameOver(&S1ownNetz);
+				update(&S1ownNetz);
+			}
+			catch (int i) {	//wenn Wert unter trow ein 2er ist dann heißt es Spiel Ende
+				if (i == 1) {
+					try {
+						update(&S2ownNetz);
+					}
+					catch (int i) {
+						if (i == 3) {		//Wenn alle Kammer voll mit Wasser sind
+							system("cls");
+							cout << endl << endl << endl;
+							cout << "Schiff versenkt !!" << endl;
+							cout << endl << endl << endl;
+							system("Pause");
+						}
+					}
+				}
+				if (i == 2) {
+					throw "Spieler 2 Gewinnt !!";
+				}
+				else if (i == 3) {		//Wenn alle Kammer voll mit Wasser sind
+					system("cls");
+					cout << endl << endl << endl;
+					cout << "Schiff versenkt !!" << endl;
+					cout << endl << endl << endl;
+					system("Pause");
+				}
 			}
 		}
 	}
@@ -236,7 +381,7 @@ void Game::setShip(string spielerName, Grid* netz)
 	char Y;
 	int y;
 	int x;
-	
+	 
 	while (Anzahl < anzahlBoote) {
 		system("cls");
 		printField(spielerName, *netz);
@@ -289,6 +434,7 @@ void Game::setShip(string spielerName, Grid* netz)
 void Game::setShipField(Schiff * meinSchiff, int X, int Y, Grid * meinNetz)
 {
 	if (X < 1 || X>10) {
+
 		throw "Eingabe der X Kordinate fehlerhaft!";
 	}
 
@@ -347,6 +493,26 @@ int Game::umwandlungYAchse(char Y)		//Methode damit für den Buchstaben eine Zeil
 	return i;
 }
 
+char Game::umwandlungCompYAchse(int Y)
+{
+	char c;
+	switch (Y)
+	{
+		case 0 :	c = 'A'; break;
+		case 1:		c = 'B'; break;
+		case 2:		c = 'C'; break;
+		case 3:		c = 'D'; break;
+		case 4:		c=  'E';  break;
+		case 5:		c = 'F'; break;
+		case 6:		c = 'G'; break;
+		case 7:		c = 'H'; break;
+		case 8:		c = 'I'; break;
+		case 9:		c = 'J'; break;
+		default:throw "Kein Zahl in der vorgegebene Grenze erkannt";
+	}
+	return c;
+}
+
 int Game::intEinlesen()
 {
 	int i;
@@ -396,6 +562,79 @@ void Game::update(Grid* Netz)
 	if (flag == true) {
 		throw 3;
 	}
+}
+
+void Game::setShipComputer(string spielerName, Grid * netz)
+{
+	string eingabe;
+	int Anzahl = 0;
+	char Y;
+	int y;
+	int x;
+	bool status = true;
+
+
+	while (Anzahl < anzahlBoote) {
+		//Bis die passenden Koordinaten eingegeben worden sind
+		while (status == true) {
+			system("cls");
+			printField(spielerName, *netz);
+			cout << "Kreuzer patzieren:" << endl;
+			Y = umwandlungCompYAchse((rand() % 10));
+			cout << "Die Y Kordinate ist:" << Y << endl;
+			getchar();
+			x = rand() % 10;
+			cout << "Die X Kordinate ist:" << x << endl;
+			getchar();
+			try {
+				y = umwandlungYAchse(Y);
+				Schiff* Kreuzer = new KreuzerSchiff();
+				setShipField(Kreuzer, x, y, netz);
+				Anzahl++;
+				status = false;
+			}
+			catch (const char* Fehler) {
+				system("cls");
+				cout << endl << endl << endl;
+				cout << Fehler << endl;
+				cout << endl << endl << endl;
+				status = true;
+			}
+		}		
+	}
+	status = true;
+
+	Anzahl = 0;
+	while (Anzahl < anzahlBoote) {
+		//Bis die passenden Koordinaten eingegeben worden sind
+		while (status == true) {
+			system("cls");
+			printField(spielerName, *netz);
+			cout << "Fregatte platzieren:" << endl;
+			Y = umwandlungCompYAchse((rand() % 10));
+			cout << "Die Y Kordinate ist:" << Y << endl;
+			getchar();
+			x = rand() % 10;
+			cout << "Die X Kordinate ist:" << x << endl;
+			getchar();
+			try {
+				y = umwandlungYAchse(Y);
+				Schiff* Fregatte = new FregatteSchiff();
+				setShipField(Fregatte, x, y, netz);
+				Anzahl++;
+				status = false;
+			}
+			catch (const char* Fehler) {
+				system("cls");
+				cout << endl << endl << endl;
+				cout << Fehler << endl;
+				cout << endl << endl << endl;
+				status = true;
+			}
+		}
+
+	}
+
 }
 
 void Game::copyRight()
