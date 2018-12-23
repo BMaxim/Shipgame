@@ -128,6 +128,7 @@ void Game::play()
 				//fahre weiter mit dem Rest des Codes fort
 			}
 			if (trefferZeile>=0 && trefferZeile<10) {					//weiter in dieser Zeile schißen bis Schiff zerstört ist
+
 				printField(S2.name, S2enemyNetz);
 				printField(S2.name, S2ownNetz);
 				cout << "Der Computer schiesst auf:" << endl;	
@@ -136,7 +137,6 @@ void Game::play()
 				getchar();
 				z = 0;
 				auto temp = this->S1ownNetz.vMatrix[trefferZeile];		//suche in dieser Zeile
-				char zeichen;
 				try {
 					x = -1; //initialisieren
 					for (auto Zeile : temp) {
@@ -146,22 +146,10 @@ void Game::play()
 							x = s;			//die X Koord. ist jetzt Schiff ok
 							throw 10;
 						}
-						//if (Zeile->fieldstate->getState() == ' ' || Zeile->fieldstate->getState() == '*' || Zeile->fieldstate->getState() == 'o') {
-						//	trefferZeile = -1;
-						//	zeichen = Zeile->fieldstate->getState();	// warum bleibt er bei wasser immer hängen?
-						//	
-						//		throw 9;
-						//}
-						
 					}
 				}
-				catch (int f) {
-					///*if (f == 9) {
-					//	trefferZeile = -1;
-					//}*/
-					//if (f == 10) {
-					//	
-					//}
+				catch (int f) {				
+					//fahre weiter mit dem Rest des Codes fort		
 				}
 				if (x == -1) {
 					printField(S2.name, S2enemyNetz);
@@ -437,7 +425,6 @@ void Game::setShipField(Schiff * meinSchiff, int X, int Y, Grid * meinNetz)
 
 		throw "Eingabe der X Kordinate fehlerhaft!";
 	}
-
 	int i = 0;
 	int j = 1;		//weil bei Spalten wird von 1 zum zählen angefangen
 	int k = (meinSchiff->getShipSize())/2;		//Mitte Schiff rausfinden
